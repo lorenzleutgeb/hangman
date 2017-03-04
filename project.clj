@@ -1,4 +1,4 @@
-(defproject facebook-example "0.1.0-SNAPSHOT"
+(defproject hangman "0.1.0-SNAPSHOT"
   :description "Facebook Messenger Bot in Clojure"
   :url "http://example.com/FIXME"
   :license {:name "Eclipse Public License"
@@ -15,7 +15,7 @@
   :plugins [[lein-ring "0.9.7"]
             [lein-environ "1.1.0"]]
   ;:hooks [environ.leiningen.hooks]
-  :ring {:handler facebook-example.core/app}
-  :uberjar-name "facebook-example-standalone.jar")
+  :ring {:handler hangman.core/app}
+  :uberjar-name "hangman-standalone.jar")
   ; :profiles {:default [:base :dev :user]
   ;            #_:production #_{:env {:production false}}})

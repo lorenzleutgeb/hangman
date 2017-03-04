@@ -1,8 +1,8 @@
-(ns facebook-example.bot
+(ns hangman.bot
   (:gen-class)
   (:require [clojure.string :as s]
             [environ.core :refer [env]]
-            [facebook-example.facebook :as fb]))
+            [hangman.facebook :as fb]))
 
 (defn on-message [payload]
   (println "on-message payload:")
