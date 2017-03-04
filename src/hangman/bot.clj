@@ -4,11 +4,41 @@
             [environ.core :refer [env]]
             [hangman.facebook :as fb]))
 
+(defn pimp [word f]
+  "Takes a string and a mapping function. Applies the mapping function character wise and then joins everything together separated by spaces."
+  (s/join " " (map f (seq word))))
+
+(defn to-public [guessed c]
+  "Takes a set of guessed character and a character. Returns the caharcter if it is in the set, and an underscore otherwise."
+  (if (contains? guessed c) c \_))
+
+(defn generated-to-public [generated-word guessed]
+  "Takes a word and a set of guessed characters. Pimps the generated word using the to-public transformation with guessed characters."
+  (pimp generated-word (partial to-public guessed)))
+
+(defn generated-to-shown [generated-word]
+  "Takes a generated word and pimps it using the identity function (basically does nothing but just inserts some spaces between the individual characters of the generated word)."
+  (pimp generated-word identity))
+
+(defn is-correct [guess generated-word]
+  "Takes a character (guess) and a word. Returns true iff the character is contained in the word."
+  (contains? (set generated-word) guess))
+
+(defn is-finished [generated-word guessed]
+  "Takes a word and a set of characters (guesses). Returns true iff all characters of the words are in the set of guesses."
+  (every? (partial contains? guessed) (seq generated-word)))
+
+(defn message-to-guesses [message]
+  (seq message))
+
+(defn is-new [guess guessed]
+  (not (contains? guessed guess)))
+
 (defn on-message [payload]
   (println "on-message payload:")
   (println payload)
   (let [sender-id (get-in payload [:sender :id])
-        recipient-id (get-in payload [:recipient :id])
+        recipient-id (get-in ptestayload [:recipient :id])
         time-of-message (get-in payload [:timestamp])
         message-text (get-in payload [:message :text])]
     (cond
