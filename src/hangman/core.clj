@@ -15,7 +15,7 @@
 (defn respond-gallow [n]
   {:status 200
    :headers {"Content-Type" "image/png"}
-   :body (clojure.java.io/resource (str "gallows/" n ".png"))})
+   :body (io/input-stream (io/resource (str "gallows/" n ".png")))})
 
 (defn respond-not-found []
   {:status 404
