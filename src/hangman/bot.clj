@@ -78,6 +78,7 @@
         state (get @user-state (get-in payload [:sender :id]))
         update (state-updater (get-in payload [:sender :id]))]
     ; check core.match for nicer layout, and condp
+    (println (str "Message is of length " (count message-text)))
     (cond
       (= (count message-text) 1)
       (let [updated-guesses (conj (get state :guesses) (first (seq message-text)))]
