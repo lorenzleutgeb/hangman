@@ -9,7 +9,10 @@
 
 (defn read-lines [rname]
   "Reads lines from a resource file."
-  (clojure.string/split-lines (slurp (clojure.java.io/resource rname))))
+  (->> rname
+    (clojure.java.io/resource)
+    (slurp)
+    (clojure.string/split-lines)))
 
 (def wordlist
   "Represents the contents of the wordlist file."
@@ -25,7 +28,10 @@
 
 (defn pimp [word f]
   "Takes a string and a mapping function. Applies the mapping function character wise and then joins everything together separated by spaces."
-  (s/join " " (map f (seq word))))
+  (->> word
+    (seq)
+    (map f)
+    (s/join " ")))
 
 (defn to-public [guessed c]
   "Takes a set of guessed character and a character. Returns the caharcter if it is in the set, and an underscore otherwise."
