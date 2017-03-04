@@ -72,16 +72,25 @@
         recipient-id (get-in payload [:recipient :id])
         time-of-message (get-in payload [:timestamp])
         message-text (get-in payload [:message :text])]
+    ; check core.match for nicer layout, and condp
     (cond
-      (s/includes? (s/lower-case message-text) "help") (fb/send-message sender-id (fb/text-message "Hi there, happy to help :)"))
-      (s/includes? (s/lower-case message-text) "foo"
+      (s/includes? (s/lower-case message-text) "help")
+      (fb/send-message sender-id (fb/text-message "Hi there, happy to help :)"))
+
+      (s/includes? (s/lower-case message-text) "foo")
+      (do
         (fb/send-message sender-id (fb/text-message "OK, got it"))
         (reset! user-state (assoc @user-state sender-id "hello")))
-      (s/includes? (s/lower-case message-text) "bar"
-        (fb/send-message sender-id (fb/text-message (str "Current state is: " (get @user-state sender-id)))))
-      (s/includes? (s/lower-case message-text) "image") (fb/send-message sender-id (fb/image-message "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/M101_hires_STScI-PRC2006-10a.jpg/1280px-M101_hires_STScI-PRC2006-10a.jpg"))
+
+      (s/includes? (s/lower-case message-text) "bar")
+      (fb/send-message sender-id (fb/text-message (str "Current state is: " (get @user-state sender-id))))
+
+      (s/includes? (s/lower-case message-text) "image")
+      (fb/send-message sender-id (fb/image-message "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/M101_hires_STScI-PRC2006-10a.jpg/1280px-M101_hires_STScI-PRC2006-10a.jpg"))
+
       ; If no rules apply echo the user's message-text input
-      :else (fb/send-message sender-id (fb/text-message message-text)))))
+      :else
+      (fb/send-message sender-id (fb/text-message message-text)))))
 
 (defn on-postback [payload]
   (println "on-postback payload:")
