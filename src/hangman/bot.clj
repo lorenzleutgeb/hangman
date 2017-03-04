@@ -102,9 +102,10 @@
         word (random-word)]
     (cond
       (= postback "GET_STARTED")
-      (update {:guesses (empty #{}) :word word})
-      (fb/send-message sender-id (fb/text-message "Welcome =)"))
-      (fb/send-message sender-id (fb/text-message (str "Let's go: " (generated-to-public word (empty #{})))))
+      (do
+        (update {:guesses (empty #{}) :word word})
+        (fb/send-message sender-id (fb/text-message "Welcome =)"))
+        (fb/send-message sender-id (fb/text-message (str "Let's go: " (generated-to-public word (empty #{}))))))
 
       :else
       (fb/send-message sender-id (fb/text-message "Sorry, I don't know how to handle that postback")))))
