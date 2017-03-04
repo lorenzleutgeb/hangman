@@ -12,8 +12,10 @@
             [ring.adapter.jetty :as jetty]
             [environ.core :refer [env]]))
 
-(defn respond-gallow [n]
-  (content-type (clojure.java.io/resource (str "gallows/" n ".png") "image/png")))
+(defn respond-gallow
+  {:status 200
+   :headers {"Content-Type" "image/png"}
+   :body (clojure.java.io/resource (str "gallows/" n ".png"))})
 
 (defn respond-not-found
   {:status 404
