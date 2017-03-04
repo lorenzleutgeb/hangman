@@ -17,6 +17,7 @@
             [lein-environ "1.1.0"]]
   ;:hooks [environ.leiningen.hooks]
   :ring {:handler hangman.core/app}
-  :uberjar-name "hangman-standalone.jar")
+  :uberjar-name "hangman-standalone.jar"
   ; :profiles {:default [:base :dev :user]
   ;            #_:production #_{:env {:production false}}})
+  :jvm-opts ["-Xmx512m" "-server"])
