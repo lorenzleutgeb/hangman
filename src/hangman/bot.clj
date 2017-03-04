@@ -82,7 +82,7 @@
     (cond
       (= (count message-text) 1)
       (let [updated-guesses (conj (get state :guesses) (first (seq message-text)))]
-        (do fb/send-message sender-id (fb/text-message (mask (get state :word) updated-guesses)))
+        (do fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask (get state :word) updated-guesses))))
         (do update (assoc state :guesses updated-guesses)))
 
       ; If no rules apply echo the user's message-text input
