@@ -12,6 +12,14 @@
             [ring.adapter.jetty :as jetty]
             [environ.core :refer [env]]))
 
+(defn respond-gallow [n]
+  (content-type (clojure.java.io/resource (str "gallows/" n ".png") "image/png")))
+
+(defn respond-not-found
+  {:status 404
+   :headers {"Content-Type" "text/plain"}
+   :body "Not Found"})
+
 (defn splash []
   {:status 200
    :headers {"Content-Type" "text/plain"}
@@ -23,7 +31,8 @@
                    (fb/handle-message request bot/on-message bot/on-postback bot/on-attachments)
                    {:status 200})
   (GET "/webhook" request
-                  (fb/validate-webhook request)))
+                  (fb/validate-webhook request))
+  (GET "/gallows/:n" [n] (respond-gallow n)))
 
 (def app
   (-> (wrap-defaults fb-routes api-defaults)
