@@ -39,7 +39,7 @@
   "Takes a set of guessed character and a character. Returns the caharcter if it is in the set, and an underscore otherwise."
   (if (contains? guessed c) c \_))
 
-(defn generated-to-public [generated-word guessed]
+(defn mask [generated-word guessed]
   "Takes a word and a set of guessed characters. Pimps the generated word using the to-public transformation with guessed characters."
   (pimp generated-word (partial to-public guessed)))
 
@@ -80,10 +80,10 @@
     ; check core.match for nicer layout, and condp
     (cond
       (= (count message-text) 1)
-      (do
-        ; Add guess for the character we received
-        (update (assoc state :guesses (conj (get state :guesses) (first (seq message-text)))))
-        (fb/send-message sender-id (fb/text-message (generated-to-public (get state :word) (get state :guesses)))))
+      (let updated-guesses (conj (get state :guesses) (first (seq message-text)))
+        (do
+          (fb/send-message sender-id (fb/text-message (mask (get state :word) updated-guesses)))
+          (update (assoc state :guesses updated-guesses))))
 
       ; If no rules apply echo the user's message-text input
       :else
@@ -104,7 +104,7 @@
       (do
         (update {:guesses (empty #{}) :word word})
         (fb/send-message sender-id (fb/text-message "Welcome =)"))
-        (fb/send-message sender-id (fb/text-message (str "Let's go: " (generated-to-public word (empty #{}))))))
+        (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word (empty #{}))))))
 
       :else
       (fb/send-message sender-id (fb/text-message "Sorry, I don't know how to handle that postback")))))
