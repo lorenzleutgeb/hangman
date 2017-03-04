@@ -2,7 +2,26 @@
   (:gen-class)
   (:require [clojure.string :as s]
             [environ.core :refer [env]]
-            [hangman.facebook :as fb]))
+            [hangman.facebook :as fb]
+            [clojure.java.io :as io]))
+
+; Utility functions for handling the wordlist.
+
+(defn read-lines [rname]
+  "Reads lines from a resource file."
+  (clojure.string/split-lines (slurp (clojure.java.io/resource rname))))
+
+(def wordlist
+  "Represents the contents of the wordlist file."
+  (read-lines "wordlist.txt"))
+
+(defn random-word []
+  "Returns a random word from the wordlist."
+  (rand-nth wordlist))
+
+; Utility functions for converting back and forth
+; between internal representations of words and
+; what is sent to the user.
 
 (defn pimp [word f]
   "Takes a string and a mapping function. Applies the mapping function character wise and then joins everything together separated by spaces."
@@ -20,6 +39,8 @@
   "Takes a generated word and pimps it using the identity function (basically does nothing but just inserts some spaces between the individual characters of the generated word)."
   (pimp generated-word identity))
 
+; Utility functions that impact game state.
+
 (defn is-correct [guess generated-word]
   "Takes a character (guess) and a word. Returns true iff the character is contained in the word."
   (contains? (set generated-word) guess))
@@ -34,11 +55,13 @@
 (defn is-new [guess guessed]
   (not (contains? guessed guess)))
 
+; Interactions.
+
 (defn on-message [payload]
   (println "on-message payload:")
   (println payload)
   (let [sender-id (get-in payload [:sender :id])
-        recipient-id (get-in ptestayload [:recipient :id])
+        recipient-id (get-in payload [:recipient :id])
         time-of-message (get-in payload [:timestamp])
         message-text (get-in payload [:message :text])]
     (cond
