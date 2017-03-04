@@ -79,11 +79,11 @@
         update (state-updater (get-in payload [:sender :id]))]
     ; check core.match for nicer layout, and condp
     (cond
-      (= (count message-text) 1
-        (do
-          ; Add guess for the character we received
-          (update (assoc state :guesses (conj (get state :guesses) (first (seq message-text)))))
-          (fb/send-message sender-id (fb/text-message (generated-to-public (get state :word) (get state :guesses))))))
+      (= (count message-text) 1)
+      (do
+        ; Add guess for the character we received
+        (update (assoc state :guesses (conj (get state :guesses) (first (seq message-text)))))
+        (fb/send-message sender-id (fb/text-message (generated-to-public (get state :word) (get state :guesses)))))
 
       ; If no rules apply echo the user's message-text input
       :else
