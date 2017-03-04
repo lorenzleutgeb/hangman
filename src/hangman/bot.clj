@@ -63,6 +63,9 @@
 (defn is-new [guess guessed]
   (not (contains? guessed guess)))
 
+(defn state-updater [sender-id]
+  (partial assoc @user-state sender-id))
+
 ; Interactions.
 
 (defn on-message [payload]
@@ -71,26 +74,21 @@
   (let [sender-id (get-in payload [:sender :id])
         recipient-id (get-in payload [:recipient :id])
         time-of-message (get-in payload [:timestamp])
-        message-text (get-in payload [:message :text])]
+        message-text (get-in payload [:message :text])
+        state (get @user-state (get-in payload [:sender :id]))
+        update (state-updater (get-in payload [:sender :id]))]
     ; check core.match for nicer layout, and condp
     (cond
-      (s/includes? (s/lower-case message-text) "help")
-      (fb/send-message sender-id (fb/text-message "Hi there, happy to help :)"))
-
-      (s/includes? (s/lower-case message-text) "foo")
-      (do
-        (fb/send-message sender-id (fb/text-message "OK, got it"))
-        (reset! user-state (assoc @user-state sender-id "hello")))
-
-      (s/includes? (s/lower-case message-text) "bar")
-      (fb/send-message sender-id (fb/text-message (str "Current state is: " (get @user-state sender-id))))
-
-      (s/includes? (s/lower-case message-text) "image")
-      (fb/send-message sender-id (fb/image-message "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/M101_hires_STScI-PRC2006-10a.jpg/1280px-M101_hires_STScI-PRC2006-10a.jpg"))
+      (= (count message-text) 1)
+      (let [guess (first (seq message-text))]
+        (do
+          ; Add guess for the character we received
+          (update (assoc state :guesses (conj (get state :guesses) guess)))
+          (fb/send-message sender-id (fb/text-message (generated-to-public (get state :word) (empty #{}))))))
 
       ; If no rules apply echo the user's message-text input
       :else
-      (fb/send-message sender-id (fb/text-message message-text)))))
+      (fb/send-message sender-id (fb/text-message "Sorry, I do not understand. :(")))))
 
 (defn on-postback [payload]
   (println "on-postback payload:")
@@ -99,10 +97,17 @@
         recipient-id (get-in payload [:recipient :id])
         time-of-message (get-in payload [:timestamp])
         postback (get-in payload [:postback :payload])
-        referral (get-in payload [:postback :referral :ref])]
+        referral (get-in payload [:postback :referral :ref])
+        update (state-updater (get-in payload [:sender :id]))
+        word (random-word)]
     (cond
-      (= postback "GET_STARTED") (fb/send-message sender-id (fb/text-message "Welcome =)"))
-      :else (fb/send-message sender-id (fb/text-message "Sorry, I don't know how to handle that postback")))))
+      (= postback "GET_STARTED")
+      (update {:guesses (empty #{}) :word word})
+      (fb/send-message sender-id (fb/text-message "Welcome =)"))
+      (fb/send-message sender-id (fb/text-message (str "Let's go: " (generated-to-public word (empty #{})))))
+
+      :else
+      (fb/send-message sender-id (fb/text-message "Sorry, I don't know how to handle that postback")))))
 
 (defn on-attachments [payload]
   (println "on-attachment payload:")
