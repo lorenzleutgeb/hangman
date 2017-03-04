@@ -84,7 +84,7 @@
         (do
           ; Add guess for the character we received
           (update (assoc state :guesses (conj (get state :guesses) guess)))
-          (fb/send-message sender-id (fb/text-message (generated-to-public (get state :word) (empty #{}))))))
+          (fb/send-message sender-id (fb/text-message (generated-to-public (get state :word) (get state :guesses))))))
 
       ; If no rules apply echo the user's message-text input
       :else
