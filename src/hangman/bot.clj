@@ -85,6 +85,9 @@
 (defn gallow [n]
   (str heroku-root "/gallows/" n))
 
+(defn wlx [n]
+  (str heroku-root "/" n))
+
 (defn with-start-over [message-text]
   {:attachment { :type "template"
                  :payload { :text message-text
@@ -119,6 +122,7 @@
               (>= updated-errors 9)
               (let [next-word (random-word)]
                 (do
+                  (fb/send-message sender-id (fb/image-message (wlx "lost")))
                   (fb/send-message sender-id (fb/text-message "Sorry to say that, but you lost! :/"))
                   (fb/send-message sender-id (fb/text-message (str "I found a new word for you to guess: " (mask next-word))))
                   (update (init-state next-word))))
@@ -126,6 +130,7 @@
               (is-finished word updated-guesses)
               (let [next-word (random-word)]
                 (do
+                  (fb/send-message sender-id (fb/image-message (wlx "won")))
                   (fb/send-message sender-id (fb/text-message "Weheeew! You made it!"))
                   (fb/send-message sender-id (fb/text-message (str "I found a new word for you to guess: " (mask next-word))))
                   (update (init-state next-word))))

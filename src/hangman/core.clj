@@ -17,6 +17,11 @@
    :headers {"Content-Type" "image/png"}
    :body (io/input-stream (io/resource (str "gallows/" n ".png")))})
 
+(defn respond-wl [n]
+  {:status 200
+   :headers {"Content-Type" "image/png"}
+   :body (io/input-stream (io/resource (str n ".png")))})
+
 (defn respond-not-found []
   {:status 404
    :headers {"Content-Type" "text/plain"}
@@ -34,7 +39,9 @@
                    {:status 200})
   (GET "/webhook" request
                   (fb/validate-webhook request))
-  (GET "/gallows/:n" [n] (respond-gallow n)))
+  (GET "/gallows/:n" [n] (respond-gallow n))
+  (GET "/won" [n] (respond-wl "won"))
+  (GET "/lost" [n] (respond-wl "lost")))
 
 (def app
   (-> (wrap-defaults fb-routes api-defaults)
