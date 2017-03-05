@@ -90,8 +90,8 @@
 
 (defn with-start-over [message-text]
   {:attachment { :type "template"
-                 :text message-text
-                 :payload { :template_type "button"
+                 :payload { :text message-text
+                            :template_type "button"
                             :buttons [ { :type "postback"
                                          :title "Start over!"
                                          :payload "START_OVER"}]}}})
@@ -116,13 +116,13 @@
             updated-guesses (conj (get state :guesses) guess)
             updated-errors (if wrong (+ errors 1) errors)]
         (do
-            (if wrong (send-gallow sender-id updated-errors) (fb/send-message sender-id (fb/text-message "Yay, correct!")))
-            (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask word updated-guesses))))
+            ;(if wrong (send-gallow sender-id updated-errors) (fb/send-message sender-id (fb/text-message "Yay, correct!")))
+            (fb/send-message sender-id (with-start-over (str "OK, carry on: " (mask word updated-guesses))))
             (update (assoc state :guesses updated-guesses :errors updated-errors))))
 
       ; If no rules apply echo the user's message-text input
       :else
-      (fb/send-message sender-id (fb/text-message "Sorry, I do not understand. :(")))))
+      (fb/send-message sender-id (with-start-over "Sorry, I do not understand. :(")))))
 
 (defn on-postback [payload]
   (println "on-postback payload:")
@@ -137,9 +137,7 @@
       (let [update (updater sender-id)
             word (random-word)]
         (do
-          (println (str "Updateing state to " empty-state))
           (update (init-state word))
-          (println (str "Obtained state " (get @user-state sender-id)))
           (if (= postback "GET_STARTED") (fb/send-message sender-id (fb/text-message "Welcome =)")))
           (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word))))))
 
