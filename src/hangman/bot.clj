@@ -93,7 +93,7 @@
                  :payload { :text message-text
                             :template_type "button"
                             :buttons [ { :type "postback"
-                                         :title "Nah, I want to start over... 😲"
+                                         :title "Nah, start over... 😲"
                                          :payload "START_OVER"}]}}})
 
 (defn on-message [payload]
@@ -116,7 +116,8 @@
             updated-guesses (conj (get state :guesses) guess)
             updated-errors (if wrong (+ errors 1) errors)]
         (do
-            ;(if wrong (send-gallow sender-id updated-errors) (fb/send-message sender-id (fb/text-message "Yay, correct!")))
+            ; (send-gallow sender-id updated-errors)
+            (if wrong (fb/send-message sender-id (fb/text-message "Oops, try again!")) (fb/send-message sender-id (fb/text-message "Yay, correct!")))
             (fb/send-message sender-id (with-start-over (str "OK, carry on: " (mask word updated-guesses))))
             (update (assoc state :guesses updated-guesses :errors updated-errors))))
 
