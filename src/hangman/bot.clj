@@ -106,11 +106,11 @@
         state (get @user-state (get-in payload [:sender :id]))
         update (updater (get-in payload [:sender :id]))]
     ; check core.match for nicer layout, and condp
-    (println (str "Message is of length " (count message-text)))
+    (println (str "State is " state))
     (cond
       (= (count message-text) 1)
       (let [word (get state :word)
-            guess (first (seq message-text))
+            guess (first (seq (s/lower-case message-text)))
             errors (get state :errors)
             wrong (is-wrong? word guess)
             updated-guesses (conj (get state :guesses) guess)
@@ -122,7 +122,7 @@
 
       ; If no rules apply echo the user's message-text input
       :else
-      (fb/send-message sender-id (with-start-over "Sorry, I do not understand. :(")))))
+      (fb/send-message sender-id (with-start-over "Sorry, I do not understand. :( Please write send a single letter.")))))
 
 (defn on-postback [payload]
   (println "on-postback payload:")
