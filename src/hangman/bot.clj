@@ -93,7 +93,7 @@
                  :payload { :text message-text
                             :template_type "button"
                             :buttons [ { :type "postback"
-                                         :title "Start over!"
+                                         :title "Nah, I want to start over... 😲"
                                          :payload "START_OVER"}]}}})
 
 (defn on-message [payload]
