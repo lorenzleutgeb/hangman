@@ -115,8 +115,25 @@
         (do
             (fb/send-message sender-id (fb/text-message (if wrong "Oops!" "Yay, correct!")))
             (fb/send-message sender-id (fb/image-message (gallow updated-errors)))
-            (fb/send-message sender-id (with-start-over (str "OK, " (rand-nth '("carry on" "next turn" "go ahead")) ": " (mask word updated-guesses))))
-            (update (assoc state :guesses updated-guesses :errors updated-errors))))
+            (cond
+              (>= updated-errors 9)
+              (let [next-word (random-word)]
+                (do
+                  (fb/send-message sender-id (fb/text-message "Sorry to say that, but you lost! :/"))
+                  (fb/send-message sender-id (fb/text-message (str "I found a new word for you to guess: " (mask next-word))))
+                  (update (init-state next-word))))
+
+              (is-finished word updated-guesses)
+              (let [next-word (random-word)]
+                (do
+                  (fb/send-message sender-id (fb/text-message "Weheeew! You made it!"))
+                  (fb/send-message sender-id (fb/text-message (str "I found a new word for you to guess: " (mask next-word))))
+                  (update (init-state next-word))))
+
+              :else
+                (do
+                  (fb/send-message sender-id (with-start-over (str "OK, " (rand-nth '("carry on" "next turn" "go ahead")) ": " (mask word updated-guesses))))
+                  (update (assoc state :guesses updated-guesses :errors updated-errors))))))
 
       ; If no rules apply echo the user's message-text input
       :else
