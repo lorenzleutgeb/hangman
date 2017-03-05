@@ -60,9 +60,9 @@
 
 ; Utility functions that impact game state.
 
-(defn is-correct [guess generated-word]
+(defn is-wrong? [generated-word guess]
   "Takes a character (guess) and a word. Returns true iff the character is contained in the word."
-  (contains? (set generated-word) guess))
+  (not (contains? (set generated-word) guess)))
 
 (defn is-finished [generated-word guessed]
   "Takes a word and a set of characters (guesses). Returns true iff all characters of the words are in the set of guesses."
@@ -109,11 +109,16 @@
     (println (str "Message is of length " (count message-text)))
     (cond
       (= (count message-text) 1)
-      (let [updated-guesses (conj (get state :guesses) (first (seq message-text)))]
+      (let [word (get state :word)
+            guess (first (seq message-text))
+            errors (get state :errors)
+            wrong (is-wrong? word guess)
+            updated-guesses (conj (get state :guesses) guess)
+            updated-errors (if wrong (+ errors 1) errors)]
         (do
-            (println (str "State is " state))
-            (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask (get state :word) updated-guesses))))
-            (update (assoc state :guesses updated-guesses))))
+            (if wrong (send-gallow sender-id updated-errors) (fb/send-message sender-id (fb/text-message "Yay, correct!")))
+            (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask word updated-guesses))))
+            (update (assoc (assoc state :guesses updated-guesses :errors updated-errors)))))
 
       ; If no rules apply echo the user's message-text input
       :else
