@@ -20,4 +20,4 @@
   :uberjar-name "hangman-standalone.jar"
   ; :profiles {:default [:base :dev :user]
   ;            #_:production #_{:env {:production false}}})
-  :jvm-opts ["-Xmx512m" "-server"])
+  :jvm-opts ["-Xmx256m" "-Xms128m" "-server"])
