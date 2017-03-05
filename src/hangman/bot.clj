@@ -112,12 +112,12 @@
       (let [updated-guesses (conj (get state :guesses) (first (seq message-text)))]
         (do
             (println (str "State is " state))
-            (fb/send-message sender-id (with-start-over (str "OK, carry on: " (mask (get state :word) updated-guesses))))
+            (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask (get state :word) updated-guesses))))
             (update (assoc state :guesses updated-guesses))))
 
       ; If no rules apply echo the user's message-text input
       :else
-      (fb/send-message sender-id (with-start-over "Sorry, I do not understand. :(")))))
+      (fb/send-message sender-id (fb/text-message "Sorry, I do not understand. :(")))))
 
 (defn on-postback [payload]
   (println "on-postback payload:")
