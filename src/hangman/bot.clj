@@ -118,7 +118,7 @@
         (do
             (if wrong (send-gallow sender-id updated-errors) (fb/send-message sender-id (fb/text-message "Yay, correct!")))
             (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask word updated-guesses))))
-            (update (assoc (assoc state :guesses updated-guesses :errors updated-errors)))))
+            (update (assoc state :guesses updated-guesses :errors updated-errors))))
 
       ; If no rules apply echo the user's message-text input
       :else
