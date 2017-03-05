@@ -10,8 +10,6 @@
 
 (def heroku-root (str "https://" (get heroku :app-name) ".herokuapp.com"))
 
-(def user-state (atom {}))
-
 ; Utility functions for handling the wordlist.
 
 (defn read-lines [rname]
@@ -29,6 +27,15 @@
   "Returns a random word from the wordlist."
   (rand-nth wordlist))
 
+; State-related.
+
+(def user-state (atom {}))
+
+(def empty-state {:guesses #{} :errors 0})
+
+(defn init-state [word]
+  (assoc empty-state :word word))
+
 ; Utility functions for converting back and forth
 ; between internal representations of words and
 ; what is sent to the user.
@@ -44,9 +51,8 @@
   "Takes a set of guessed character and a character. Returns the caharcter if it is in the set, and an underscore otherwise."
   (if (contains? guessed c) c \_))
 
-(defn mask [generated-word guessed]
-  "Takes a word and a set of guessed characters. Pimps the generated word using the to-public transformation with guessed characters."
-  (pimp generated-word (partial to-public guessed)))
+(defn mask [generated-word (mask generated-word #{})
+            generated-word guessed (pimp generated-word (partial to-public guessed))])
 
 (defn generated-to-shown [generated-word]
   "Takes a generated word and pimps it using the identity function (basically does nothing but just inserts some spaces between the individual characters of the generated word)."
@@ -109,18 +115,17 @@
         recipient-id (get-in payload [:recipient :id])
         time-of-message (get-in payload [:timestamp])
         postback (get-in payload [:postback :payload])
-        referral (get-in payload [:postback :referral :ref])
-        update (state-updater (get-in payload [:sender :id]))
-        word (random-word)]
+        referral (get-in payload [:postback :referral :ref])]
     (cond
       (= postback "GET_STARTED")
-      (let [empty-state {:guesses (empty #{}) :word word :errors 0}]
+      (let [update (state-updater sender-id)
+            word (random-word)]
         (do
           (println (str "Updateing state to " empty-state))
-          (update empty-state)
+          (update (init-state word))
           (println (str "Obtained state " (get @user-state sender-id)))
           (fb/send-message sender-id (fb/text-message "Welcome =)"))
-          (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word (empty #{})))))))
+          (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word))))))
 
       :else
       (fb/send-message sender-id (fb/text-message "Sorry, I don't know how to handle that postback")))))
