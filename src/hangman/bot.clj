@@ -69,7 +69,7 @@
   (not (contains? guessed guess)))
 
 (defn state-updater [sender-id]
-  (partial assoc @user-state sender-id))
+  (reset! user-state (partial assoc @user-state sender-id)))
 
 ; Interactions.
 
