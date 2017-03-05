@@ -74,8 +74,11 @@
 (defn is-new [guess guessed]
   (not (contains? guessed guess)))
 
-(defn state-updater [sender-id]
-  (reset! user-state (partial assoc @user-state sender-id)))
+(defn update-state [sender-id state]
+  (reset! user-state (assoc @user-state sender-id state)))
+
+(defn updater [sender-id]
+  (partial update-state sender-id))
 
 ; Interactions.
 
@@ -101,7 +104,7 @@
         time-of-message (get-in payload [:timestamp])
         message-text (get-in payload [:message :text])
         state (get @user-state (get-in payload [:sender :id]))
-        update (state-updater (get-in payload [:sender :id]))]
+        update (updater (get-in payload [:sender :id]))]
     ; check core.match for nicer layout, and condp
     (println (str "Message is of length " (count message-text)))
     (cond
@@ -126,7 +129,7 @@
         referral (get-in payload [:postback :referral :ref])]
     (cond
       (contains? #{"GET_STARTED" "START_OVER"} postback)
-      (let [update (state-updater sender-id)
+      (let [update (updater sender-id)
             word (random-word)]
         (do
           (println (str "Updateing state to " empty-state))
