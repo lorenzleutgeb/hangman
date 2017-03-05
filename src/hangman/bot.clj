@@ -114,10 +114,13 @@
         word (random-word)]
     (cond
       (= postback "GET_STARTED")
-      (do
-        (update {:guesses (empty #{}) :word word :errors 0})
-        (fb/send-message sender-id (fb/text-message "Welcome =)"))
-        (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word (empty #{}))))))
+      (let [empty-state {:guesses (empty #{}) :word word :errors 0}]
+        (do
+          (println (str "Updateing state to " empty-state))
+          (update empty-state)
+          (println (str "Obtained state " (get @user-state sender-id)))
+          (fb/send-message sender-id (fb/text-message "Welcome =)"))
+          (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word (empty #{})))))))
 
       :else
       (fb/send-message sender-id (fb/text-message "Sorry, I don't know how to handle that postback")))))
