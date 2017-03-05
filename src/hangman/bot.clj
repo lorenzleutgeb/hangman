@@ -118,7 +118,7 @@
         (do
             (fb/send-message sender-id (fb/text-message (if wrong "Oops!" "Yay, correct!")))
             (send-gallow sender-id updated-errors)
-            (fb/send-message sender-id (with-start-over (str "OK, " (rand-nth '("carry on" "next turn" "go ahead") ": " (mask word updated-guesses)))))
+            (fb/send-message sender-id (with-start-over (str "OK, " (rand-nth '("carry on" "next turn" "go ahead")) ": " (mask word updated-guesses))))
             (update (assoc state :guesses updated-guesses :errors updated-errors))))
 
       ; If no rules apply echo the user's message-text input
