@@ -93,7 +93,7 @@
                  :payload { :text message-text
                             :template_type "button"
                             :buttons [ { :type "postback"
-                                         :title "Nah, start over... 😲"
+                                         :title "Nah, start over..."
                                          :payload "START_OVER"}]}}})
 
 (defn on-message [payload]
@@ -116,8 +116,9 @@
             updated-guesses (conj (get state :guesses) guess)
             updated-errors (if wrong (+ errors 1) errors)]
         (do
-            (if wrong (do (send-gallow sender-id updated-errors)) (do (fb/send-message sender-id (fb/text-message "Yay, correct!"))))
-            (fb/send-message sender-id (with-start-over (str "OK, carry on: " (mask word updated-guesses))))
+            (fb/send-message sender-id (fb/text-message (if wrong "Oops!" "Yay, correct!")))
+            (send-gallow sender-id updated-errors)
+            (fb/send-message sender-id (with-start-over (str "OK, " (rand-nth '("carry on" "next turn" "go ahead") ": " (mask word updated-guesses)))))
             (update (assoc state :guesses updated-guesses :errors updated-errors))))
 
       ; If no rules apply echo the user's message-text input
