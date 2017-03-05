@@ -5,6 +5,11 @@
             [hangman.facebook :as fb]
             [clojure.java.io :as io]))
 
+(def heroku {:app-name (env :heroku-app-name)
+             :release-created-at (env :heroku-release-created-at)})
+
+(def heroku-root (str "https://" (get heroku :app-name) ".herokuapp.com"))
+
 (def user-state (atom {}))
 
 ; Utility functions for handling the wordlist.
@@ -68,6 +73,12 @@
 
 ; Interactions.
 
+(defn gallow [n]
+  (str heroku-root "/gallows" n))
+
+(defn send-gallow [sender-id n]
+  (fb/send-message sender-id (fb/image-message (gallow n))))
+
 (defn on-message [payload]
   (println "on-message payload:")
   (println payload)
@@ -82,8 +93,8 @@
     (cond
       (= (count message-text) 1)
       (let [updated-guesses (conj (get state :guesses) (first (seq message-text)))]
-        (eval (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask (get state :word) updated-guesses)))))
-        (eval (update (assoc state :guesses updated-guesses))))
+        (doall (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask (get state :word) updated-guesses))))
+               (update (assoc state :guesses updated-guesses))))
 
       ; If no rules apply echo the user's message-text input
       :else
@@ -102,7 +113,7 @@
     (cond
       (= postback "GET_STARTED")
       (do
-        (update {:guesses (empty #{}) :word word})
+        (update {:guesses (empty #{}) :word word :errors 0})
         (fb/send-message sender-id (fb/text-message "Welcome =)"))
         (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word (empty #{}))))))
 
