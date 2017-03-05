@@ -51,8 +51,8 @@
   "Takes a set of guessed character and a character. Returns the caharcter if it is in the set, and an underscore otherwise."
   (if (contains? guessed c) c \_))
 
-(defn mask [generated-word (mask generated-word #{})
-            generated-word guessed (pimp generated-word (partial to-public guessed))])
+(defn mask ([generated-word] (mask generated-word #{}))
+           ([generated-word guessed] (pimp generated-word (partial to-public guessed))))
 
 (defn generated-to-shown [generated-word]
   "Takes a generated word and pimps it using the identity function (basically does nothing but just inserts some spaces between the individual characters of the generated word)."
@@ -85,6 +85,14 @@
 (defn send-gallow [sender-id n]
   (fb/send-message sender-id (fb/image-message (gallow n))))
 
+(defn with-start-over [message-text]
+  {:attachment { :type "template"
+                 :text message-text
+                 :payload { :template_type "button"
+                            :buttons [ { :type "postback"
+                                         :title "Start over!"
+                                         :payload "START_OVER"}]}}})
+
 (defn on-message [payload]
   (println "on-message payload:")
   (println payload)
@@ -101,12 +109,12 @@
       (let [updated-guesses (conj (get state :guesses) (first (seq message-text)))]
         (do
             (println (str "State is " state))
-            (fb/send-message sender-id (fb/text-message (str "OK, carry on: " (mask (get state :word) updated-guesses))))
+            (fb/send-message sender-id (with-start-over (str "OK, carry on: " (mask (get state :word) updated-guesses))))
             (update (assoc state :guesses updated-guesses))))
 
       ; If no rules apply echo the user's message-text input
       :else
-      (fb/send-message sender-id (fb/text-message "Sorry, I do not understand. :(")))))
+      (fb/send-message sender-id (with-start-over "Sorry, I do not understand. :(")))))
 
 (defn on-postback [payload]
   (println "on-postback payload:")
@@ -117,14 +125,14 @@
         postback (get-in payload [:postback :payload])
         referral (get-in payload [:postback :referral :ref])]
     (cond
-      (= postback "GET_STARTED")
+      (contains? #{"GET_STARTED" "START_OVER"} postback)
       (let [update (state-updater sender-id)
             word (random-word)]
         (do
           (println (str "Updateing state to " empty-state))
           (update (init-state word))
           (println (str "Obtained state " (get @user-state sender-id)))
-          (fb/send-message sender-id (fb/text-message "Welcome =)"))
+          (if (= postback "GET_STARTED") (fb/send-message sender-id (fb/text-message "Welcome =)")))
           (fb/send-message sender-id (fb/text-message (str "Let's go: " (mask word))))))
 
       :else
