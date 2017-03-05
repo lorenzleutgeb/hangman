@@ -83,10 +83,7 @@
 ; Interactions.
 
 (defn gallow [n]
-  (str heroku-root "/gallows" n))
-
-(defn send-gallow [sender-id n]
-  (fb/send-message sender-id (fb/image-message (gallow n))))
+  (str heroku-root "/gallows/" n))
 
 (defn with-start-over [message-text]
   {:attachment { :type "template"
@@ -117,7 +114,7 @@
             updated-errors (if wrong (+ errors 1) errors)]
         (do
             (fb/send-message sender-id (fb/text-message (if wrong "Oops!" "Yay, correct!")))
-            (send-gallow sender-id updated-errors)
+            (fb/send-message sender-id (fb/image-message (gallow updated-errors)))
             (fb/send-message sender-id (with-start-over (str "OK, " (rand-nth '("carry on" "next turn" "go ahead")) ": " (mask word updated-guesses))))
             (update (assoc state :guesses updated-guesses :errors updated-errors))))
 
